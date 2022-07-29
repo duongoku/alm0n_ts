@@ -1,0 +1,11 @@
+// Load dependencies
+import { Message } from "discord.js";
+import { NewClient } from "../index";
+
+export function run(client: NewClient, message: Message, args: string[]) {
+    // Do command stuff here
+}
+
+export const type = ;
+export const aliases = [];
+export const description = ;

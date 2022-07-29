@@ -102,3 +102,12 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Miscellaneous
+.editorconfig
+.env
+.vscode
+cached_data/*
+config.json
+env.json
+log.txt
