@@ -2,6 +2,11 @@ import axios from "axios";
 import { Agent } from "https";
 import { Message } from "discord.js";
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const GETSETDB = process.env.GETSETDB!;
+
 const AUTH_BASE_URL = "https://auth.riotgames.com";
 const ENTITLEMENTS_BASE_URL = "https://entitlements.auth.riotgames.com";
 const REGION_BASE_URL = {
@@ -54,7 +59,7 @@ export class ValorantClient {
 
     static async check_riot_account(message: Message): Promise<boolean> {
         // Check if user has a riot account in database
-        const Client = require("@replit/database");
+        const Client = require(GETSETDB);
         const client = new Client();
         const riot_username = await client.get(
             `riot_username_${message.author.id}`
@@ -70,7 +75,7 @@ export class ValorantClient {
 
     static async get_riot_username(message: Message): Promise<string> {
         // Get riot username from database
-        const Client = require("@replit/database");
+        const Client = require(GETSETDB);
         const client = new Client();
         const riot_username = await client.get(
             `riot_username_${message.author.id}`
@@ -80,7 +85,7 @@ export class ValorantClient {
 
     static async get_riot_password(message: Message): Promise<string> {
         // Get riot password from database
-        const Client = require("@replit/database");
+        const Client = require(GETSETDB);
         const client = new Client();
         const riot_password = await client.get(
             `riot_password_${message.author.id}`

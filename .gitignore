@@ -112,3 +112,4 @@ config.json
 env.json
 log.txt
 match.png
+*.db

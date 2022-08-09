@@ -2,11 +2,16 @@
 import { Message } from "discord.js";
 import { NewClient } from "../index";
 
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const GETSETDB = process.env.GETSETDB!;
+
 async function save_riot_username(
     message: Message,
     username: string
 ): Promise<void> {
-    const Client = require("@replit/database");
+    const Client = require(GETSETDB);
     const client = new Client();
     await client.set(`riot_username_${message.author.id}`, username);
 }
