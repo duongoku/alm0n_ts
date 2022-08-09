@@ -2,10 +2,6 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-// Keep the bot running
-import * as keepAlive from "./utils/keepAlive";
-keepAlive.keepAlive();
-
 // Load dependencies
 import * as CGVFetcher from "./utils/CGVFetcher";
 import * as ValorantFetcher from "./utils/ValorantFetcher";
