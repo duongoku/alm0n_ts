@@ -1,2 +1,2 @@
-# alm0n0-ts
+# alm0n-ts
 A general purpose Discord bot
