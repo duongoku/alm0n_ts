@@ -94,7 +94,9 @@ export async function run(client: NewClient, message: Message, args: string[]) {
                 }`,
             });
         if (server.players.length > 0) {
-            embed.addField("Players", server.players.join(", "));
+            embed.addFields([
+                { name: "Players", value: server.players.join(", ") },
+            ]);
         }
         return message.channel.send({ embeds: [embed] });
     } else {
