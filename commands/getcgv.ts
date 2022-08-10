@@ -50,7 +50,7 @@ async function get_film_embed(film: Film, day: Day): Promise<MessageEmbed> {
         .setTitle(film.name)
         .setDescription(film.type)
         .setImage(`attachment://${film.poster.split("/").pop()}`)
-        .addField(`Film schedule on ${day.date}`, schedule);
+        .addFields([{ name: `Film schedule on ${day.date}`, value: schedule }]);
 }
 
 function get_city_selection_row(
