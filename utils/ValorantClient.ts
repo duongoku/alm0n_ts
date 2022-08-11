@@ -280,14 +280,3 @@ export class ValorantClient {
         return offers;
     }
 }
-
-// async function test() {
-//     const client = new ValorantClient();
-//     await client.init("duongoku", "Lucario3011riot");
-//     const account = await client.get_account();
-//     const offers = await client.get_single_item_offers();
-//     console.log(account);
-//     console.log(offers);
-// }
-
-// test();
