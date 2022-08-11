@@ -1,4 +1,6 @@
 import axios from "axios";
+import * as fs from "fs";
+
 import { Agent } from "https";
 import { Message } from "discord.js";
 
@@ -16,6 +18,23 @@ const REGION_BASE_URL = {
     kr: "https://pd.kr.a.pvp.net",
 };
 
+export const ITEMTYPEID = {
+    AGENTS: `01bb38e1-da47-4e6a-9b3d-945fe4655707`,
+    CONTRACTS: `f85cb6f7-33e5-4dc8-b609-ec7212301948`,
+    SPRAYS: `d5f120f8-ff8c-4aac-92ea-f2b5acbe9475`,
+    BUDDIES: `dd3bf334-87f3-40bd-b043-682a57a8dc3a 	`,
+    CARDS: `3f296c07-64c3-494c-923b-fe692a4fa1bd`,
+    SKINS: `e7c63390-eda7-46e0-bb7a-a6abdacd2433`,
+    SKINVARIANTS: `3ad1b2b2-acdb-4524-852f-954a76ddae0a`,
+    TITLES: `de7caa6b-adf7-4588-bbd1-143831e786c6`,
+    INVENTORY_SKINS: `4e60e748-bce6-4faa-9327-ebbe6089d5fe`,
+};
+export const CURRENCYID = {
+    VP: `85ad13f7-3d1b-5128-9eb2-7cd8ee0b5741`, // Valorant Point
+    FA: `f08d4ae3-939c-4576-ab26-09ce1f23bb37`, // Free Agent
+    RP: `e59aa87c-4cbf-517a-5983-6e81511be9b7`, // Radianite Point
+};
+
 // This piece of code is from https://github.com/liamcottle/valorant.js/pull/22
 const ciphers = [
     "TLS_CHACHA20_POLY1305_SHA256",
@@ -29,6 +48,12 @@ const agent = new Agent({
     minVersion: "TLSv1.2",
 });
 // This piece of code is from https://github.com/liamcottle/valorant.js/pull/22
+
+export interface Skin {
+    name: string;
+    icon: string;
+    price: number;
+}
 
 class AccessToken {
     token: string;
@@ -243,6 +268,47 @@ export class ValorantClient {
         } catch (error) {
             return null;
         }
+    }
+
+    async get_all_skins() {
+        const result = fs.readFileSync(`${process.env.CACHEDIR}/skins.json`);
+        return JSON.parse(result.toString());
+    }
+
+    async get_inventory() {
+        // Check if sub is empty
+        if (this.sub === "") {
+            return null;
+        }
+        const url = `${REGION_BASE_URL.ap}/store/v1/entitlements/${this.sub}/${ITEMTYPEID.SKINS}`;
+        const response = await axios.get(url, {
+            headers: this.global_headers,
+        });
+        const items = response.data!.Entitlements!;
+        const result: Skin[] = [];
+        const all_skins = await this.get_all_skins();
+
+        for (const item of items) {
+            if (item.TypeID === ITEMTYPEID.INVENTORY_SKINS) {
+                if (all_skins[item.ItemID]){
+                    result.push(all_skins[item.ItemID]);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    async get_item_prices() {
+        // Check if sub is empty
+        if (this.sub === "") {
+            return null;
+        }
+        const url = `${REGION_BASE_URL.ap}/store/v1/offers`;
+        const response = await axios.get(url, {
+            headers: this.global_headers,
+        });
+        return response.data!.Offers!;
     }
 
     async get_single_item_offers() {
