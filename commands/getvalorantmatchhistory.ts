@@ -2,6 +2,7 @@
 import * as fs from "fs";
 import * as process from "process";
 import axios from "axios";
+import { DateTime } from "luxon";
 import { Canvas, createCanvas, loadImage, registerFont } from "canvas";
 import {
     Message,
@@ -384,9 +385,9 @@ function reformat_match(match: any, username: string, tagline: string): Match {
     const map = get_map_id(match["metadata"]["map"]);
     const mapName = match["metadata"]["map"];
     const result = match["teams"][team]["has_won"] ? "victory" : "defeat";
-    const timestamp = new Date(match["metadata"]["game_start"]).toLocaleString(
-        "vi-VN"
-    );
+    const timestamp = DateTime.fromSeconds(match["metadata"]["game_start"])
+        .setZone("Asia/Ho_Chi_Minh")
+        .toRFC2822();
     const agent = player["assets"]["agent"]["small"].split("/")[4];
     const agentName = player["character"];
     const kills = player["stats"]["kills"];
@@ -448,7 +449,7 @@ function get_match_embed_message(
         .setColor("#0099ff")
         .setTitle(`${match.mode} Game - Map ${match.mapName}`)
         .setDescription(
-            `${match.result}\nAgent: ${match.agentName}\nKDA: ${match.kills}/${match.deaths}/${match.assists}`
+            `${match.result}\nAgent: ${match.agentName}\nKDA: ${match.kills}/${match.deaths}/${match.assists}\n${match.timestamp}`
         )
         .setThumbnail(
             `https://media.valorant-api.com/agents/${match.agent}/displayicon.png`

@@ -113,3 +113,4 @@ env.json
 log.txt
 match.png
 *.db
+test.ts
