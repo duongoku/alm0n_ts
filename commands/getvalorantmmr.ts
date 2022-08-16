@@ -33,7 +33,7 @@ function get_comp_tier_icon(tier: number): string {
     const tiers = JSON.parse(
         fs.readFileSync(`${process.env.CACHEDIR}/comp_tiers.json`).toString()
     );
-    return tiers[tier].smallIcon;
+    return tiers[tier].largeIcon;
 }
 
 async function get_mmr_embed_message(
