@@ -15,6 +15,8 @@ async function cache_competitive_tiers_icons() {
     const response = await axios.get(url);
     const data = response.data!.data;
     const tier_data = data[data.length - 1]!.tiers;
+    
+    fs.writeFileSync(`${CACHEDIR}/comp_tiers.json`, JSON.stringify(tier_data));
     for (let tier of tier_data) {
         const icon_url = tier!.smallIcon;
         if (icon_url === null) {
