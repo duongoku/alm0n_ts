@@ -15,7 +15,7 @@ async function cache_competitive_tiers_icons() {
     const response = await axios.get(url);
     const data = response.data!.data;
     const tier_data = data[data.length - 1]!.tiers;
-    
+
     fs.writeFileSync(`${CACHEDIR}/comp_tiers.json`, JSON.stringify(tier_data));
     for (let tier of tier_data) {
         const icon_url = tier!.smallIcon;
@@ -23,12 +23,16 @@ async function cache_competitive_tiers_icons() {
             continue;
         }
         console.log(`  Getting icon ${icon_url}`);
-        const icon_buffer = await axios.get(icon_url, {
-            responseType: "arraybuffer",
-        });
-        const filepath = `${CACHEDIR}/images/tier_${tier.tier}.png`;
-        fs.writeFileSync(filepath, icon_buffer.data);
-        console.log(`  Saved icon ${icon_url} to ${filepath}`);
+        try {
+            const icon_buffer = await axios.get(icon_url, {
+                responseType: "arraybuffer",
+            });
+            const filepath = `${CACHEDIR}/images/tier_${tier.tier}.png`;
+            fs.writeFileSync(filepath, icon_buffer.data);
+            console.log(`  Saved icon ${icon_url} to ${filepath}`);
+        } catch (e) {
+            console.log(`    Error: ${e}`);
+        }
     }
 }
 
