@@ -413,7 +413,8 @@ async function get_match_history(
     tagline: string,
     match_type: string,
     match_count: number = 5,
-    region: string = "ap"
+    region: string = "ap",
+    tries: number = 1
 ): Promise<Match[]> {
     try {
         const url = encodeURI(
@@ -435,6 +436,17 @@ async function get_match_history(
         return sliced_matches;
     } catch (error) {
         console.log((error as Error).message);
+        if (tries > 0) {
+            console.log(`Retrying...`);
+            return await get_match_history(
+                username,
+                tagline,
+                match_type,
+                match_count,
+                region,
+                tries - 1
+            );
+        }
         return [];
     }
 }
