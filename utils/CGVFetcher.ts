@@ -117,65 +117,72 @@ async function get_cgv_cities(): Promise<City[]> {
 async function get_in_theaters(url: string): Promise<Day[]> {
     console.log(` Getting ${url}`);
 
-    let response = await axios.get(url);
-    let root = parse(response.data);
-    let table = root.querySelector(".collateral-tabs");
-    if (table == null) {
+    try {
+        let response = await axios.get(url);
+        let root = parse(response.data);
+        let table = root.querySelector(".collateral-tabs");
+        if (table == null) {
+            return [];
+        }
+        let day_elems = table!.querySelectorAll(".day");
+        let film_day_elems = table!.querySelectorAll(".cgv-sites-schedule");
+        let days: Day[] = [];
+
+        // Get film schedule for each day
+        for (let i = 0; i < day_elems.length; i++) {
+            let day = new Day();
+
+            let weekday = day_elems[i].querySelector("em")!.textContent.trim();
+            let monthday = day_elems[i]
+                .querySelector("strong")!
+                .textContent.trim();
+            let month = day_elems[i].querySelector("span")!.textContent.trim();
+            day.date = `${weekday} ${monthday}/${month}`;
+
+            let film_list = film_day_elems[i];
+            let film_elems = film_list!.querySelectorAll(".film-list");
+            let films: Film[] = [];
+            for (let film_elem of film_elems) {
+                // Get film info elements
+                let efilmlabel = film_elem.querySelector(".film-label");
+                let efilmposter = film_elem.querySelector(".film-poster");
+                let efilmright = film_elem.querySelector(".film-right");
+
+                // Parse film info from above elements
+                let filmlabel = efilmlabel!
+                    .querySelector("a")!
+                    .textContent.trim()
+                    .replace(/\s\s+/g, " - ");
+                let filmposterurl =
+                    efilmposter!.querySelector("img")!.attributes["src"];
+                let filmposter = await save_image(filmposterurl);
+                let filmtype = efilmright!
+                    .querySelector(".film-screen")!
+                    .textContent.trim();
+                let filmshowtimes = efilmright!
+                    .querySelectorAll("span")!
+                    .map((x) => {
+                        return x.textContent.trim();
+                    });
+
+                films.push({
+                    name: filmlabel,
+                    poster: filmposter,
+                    type: filmtype,
+                    showtimes: filmshowtimes,
+                });
+            }
+            day.films = films;
+
+            days.push(day);
+        }
+
+        console.log(`  Done ${url}`);
+        return days;
+    } catch (err) {
+        console.log(err);
         return [];
     }
-    let day_elems = table!.querySelectorAll(".day");
-    let film_day_elems = table!.querySelectorAll(".cgv-sites-schedule");
-    let days: Day[] = [];
-
-    // Get film schedule for each day
-    for (let i = 0; i < day_elems.length; i++) {
-        let day = new Day();
-
-        let weekday = day_elems[i].querySelector("em")!.textContent.trim();
-        let monthday = day_elems[i].querySelector("strong")!.textContent.trim();
-        let month = day_elems[i].querySelector("span")!.textContent.trim();
-        day.date = `${weekday} ${monthday}/${month}`;
-
-        let film_list = film_day_elems[i];
-        let film_elems = film_list!.querySelectorAll(".film-list");
-        let films: Film[] = [];
-        for (let film_elem of film_elems) {
-            // Get film info elements
-            let efilmlabel = film_elem.querySelector(".film-label");
-            let efilmposter = film_elem.querySelector(".film-poster");
-            let efilmright = film_elem.querySelector(".film-right");
-
-            // Parse film info from above elements
-            let filmlabel = efilmlabel!
-                .querySelector("a")!
-                .textContent.trim()
-                .replace(/\s\s+/g, " - ");
-            let filmposterurl =
-                efilmposter!.querySelector("img")!.attributes["src"];
-            let filmposter = await save_image(filmposterurl);
-            let filmtype = efilmright!
-                .querySelector(".film-screen")!
-                .textContent.trim();
-            let filmshowtimes = efilmright!
-                .querySelectorAll("span")!
-                .map((x) => {
-                    return x.textContent.trim();
-                });
-
-            films.push({
-                name: filmlabel,
-                poster: filmposter,
-                type: filmtype,
-                showtimes: filmshowtimes,
-            });
-        }
-        day.films = films;
-
-        days.push(day);
-    }
-
-    console.log(`  Done ${url}`);
-    return days;
 }
 
 export async function fetch() {
