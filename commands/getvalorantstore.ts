@@ -47,6 +47,10 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
 
     const skins: Skin[] = [];
     for (const item of offers.items) {
+        if (ValorantClient.all_skins[item] === undefined) {
+            console.log("Unknown skin: " + item);
+            continue;
+        }
         const skin = {
             name: ValorantClient.all_skins[item].name,
             icon: ValorantClient.all_skins[item].icon,
