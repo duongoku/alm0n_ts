@@ -73,6 +73,21 @@ async function cache_items() {
         }
     }
 
+    // Get skin prices of featured skins in case they are not yet in the price list
+    const raw_featured = await ValorantClient.get_featured_item_prices();
+    for (let i = 0; i < raw_featured.length; i++) {
+        const x = raw_featured[i].Items;
+        for (let j = 0; j < x.length; j++) {
+            if (x[j].Item.ItemTypeID === ITEMTYPEID.SKINS) {
+                if (price[x[j].Item.ItemID] !== undefined) {
+                    continue;
+                } else {
+                    price[x[j].Item.ItemID] = x[j].BasePrice;
+                }
+            }
+        }
+    }
+
     // Get skin data
     const url = "https://valorant-api.com/v1/weapons/skins/";
     const response = await axios.get(url);

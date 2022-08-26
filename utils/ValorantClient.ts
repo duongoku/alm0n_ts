@@ -315,6 +315,12 @@ export class ValorantClient {
         return response.data!.data!.Offers!;
     }
 
+    static async get_featured_item_prices() {
+        const url = `https://api.henrikdev.xyz/valorant/v1/store-featured`;
+        const response = await axios.get(url);
+        return response.data!.data!.FeaturedBundle!.Bundles!;
+    }
+
     async get_single_item_offers() {
         const storefront = await this.get_storefront();
         // Check if storefront is null
