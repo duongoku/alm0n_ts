@@ -308,15 +308,9 @@ export class ValorantClient {
         return result;
     }
 
-    async get_item_prices() {
-        // Check if sub is empty
-        if (this.sub === "") {
-            return null;
-        }
-        const url = `${REGION_BASE_URL.ap}/store/v1/offers`;
-        const response = await axios.get(url, {
-            headers: this.global_headers,
-        });
+    static async get_item_prices() {
+        const url = `https://api.henrikdev.xyz/valorant/v1/store-offers`;
+        const response = await axios.get(url);
         return response.data!.Offers!;
     }
 

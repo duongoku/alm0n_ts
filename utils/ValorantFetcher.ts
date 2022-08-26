@@ -7,8 +7,6 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const CACHEDIR = process.env.CACHEDIR!;
-const RIOTUSERNAME = process.env.RIOTUSERNAME!;
-const RIOTPASSWORD = process.env.RIOTPASSWORD!;
 
 async function cache_competitive_tiers_icons() {
     const url = "https://valorant-api.com/v1/competitivetiers";
@@ -66,9 +64,7 @@ async function cache_maps() {
 
 async function cache_items() {
     // Get skin prices
-    const client = new ValorantClient();
-    await client.init(RIOTUSERNAME, RIOTPASSWORD);
-    const raw_price = await client.get_item_prices();
+    const raw_price = await ValorantClient.get_item_prices();
     const price: Record<string, number> = {};
     for (let i = 0; i < raw_price.length; i++) {
         if (raw_price[i].Rewards[0].ItemTypeID === ITEMTYPEID.SKINS) {
