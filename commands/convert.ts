@@ -82,7 +82,7 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
             !(await check_currency(dst_curr))
         ) {
             return await interaction.editReply(
-                "Invalid currency. Please use the following format: `$convert <src_curr> <dst_curr> <amount>`"
+                "Invalid currency"
             );
         }
 

@@ -82,6 +82,9 @@ export class ValorantClient {
 
     constructor() {}
 
+    public static NOT_REGISTERED_MSG =
+        "You don't have a riot account saved in the database. Please register using /setriotusername and /setriotpassword.";
+
     static async check_riot_account(
         interaction: CommandInteraction
     ): Promise<boolean> {

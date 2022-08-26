@@ -25,9 +25,7 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
         interaction
     );
     if (!has_riot_account) {
-        return await interaction.editReply(
-            "You don't have a riot account saved in the database. Please use the following format: `$setriotusername <username>` or `$sru <username>` to save your username and `$setriotpassword <password>` or `$srp <password>` to save your password."
-        );
+        return await interaction.editReply(ValorantClient.NOT_REGISTERED_MSG);
     }
 
     // Get riot username and password from database
