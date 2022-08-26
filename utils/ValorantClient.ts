@@ -311,7 +311,7 @@ export class ValorantClient {
     static async get_item_prices() {
         const url = `https://api.henrikdev.xyz/valorant/v1/store-offers`;
         const response = await axios.get(url);
-        return response.data!.Offers!;
+        return response.data!.data!.Offers!;
     }
 
     async get_single_item_offers() {
