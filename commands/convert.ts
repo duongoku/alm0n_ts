@@ -82,7 +82,7 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
             !(await check_currency(dst_curr))
         ) {
             return await interaction.editReply(
-                "Invalid currency"
+                "Invalid currency!"
             );
         }
 
@@ -113,7 +113,7 @@ export const data = new SlashCommandBuilder()
     )
     .addStringOption((option) =>
         option
-            .setName("destinatio_currency")
+            .setName("destination_currency")
             .setDescription("Enter your destination currency")
             .setRequired(true)
     )
