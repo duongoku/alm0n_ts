@@ -352,4 +352,6 @@ export class ValorantClient {
     }
 }
 
-ValorantClient.all_skins = await ValorantClient.get_all_skins();
+(async () => {
+    ValorantClient.all_skins = await ValorantClient.get_all_skins();
+})();
