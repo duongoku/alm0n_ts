@@ -6,12 +6,13 @@ import {
 } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
-import { ValorantClient } from "../utils/ValorantClient";
+import { ValorantClient, Skin } from "../utils/ValorantClient";
 
 function get_embed_message(skins: any[], index: number) {
     return new MessageEmbed()
         .setColor("#0099ff")
         .setTitle(`${skins[index].name}`)
+        .setDescription(`Price: ${skins[index].price}VP`)
         .setImage(`${skins[index].icon}`)
         .setFooter({ text: `Offer #${index + 1} in ${skins.length} offers` });
 }
@@ -44,14 +45,12 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
         );
     }
 
-    const skins: {
-        name: string;
-        icon: string;
-    }[] = [];
+    const skins: Skin[] = [];
     for (const item of offers.items) {
         const skin = {
-            name: await ValorantClient.get_skin_name(item),
-            icon: `https://media.valorant-api.com/weaponskinlevels/${item}/displayicon.png`,
+            name: ValorantClient.all_skins[item].name,
+            icon: ValorantClient.all_skins[item].icon,
+            price: ValorantClient.all_skins[item].price,
         };
         skins.push(skin);
     }

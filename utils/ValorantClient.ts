@@ -80,6 +80,8 @@ export class ValorantClient {
         "X-Riot-Entitlements-JWT": "",
     };
 
+    static all_skins: { [x: string]: Skin } = {};
+
     constructor() {}
 
     public static NOT_REGISTERED_MSG =
@@ -279,12 +281,12 @@ export class ValorantClient {
         }
     }
 
-    async get_all_skins() {
+    static async get_all_skins() {
         const result = fs.readFileSync(`${process.env.CACHEDIR}/skins.json`);
         return JSON.parse(result.toString());
     }
 
-    async get_inventory() {
+    async get_inventory(): Promise<Skin[] | null> {
         // Check if sub is empty
         if (this.sub === "") {
             return null;
@@ -295,12 +297,11 @@ export class ValorantClient {
         });
         const items = response.data!.Entitlements!;
         const result: Skin[] = [];
-        const all_skins = await this.get_all_skins();
 
         for (const item of items) {
             if (item.TypeID === ITEMTYPEID.INVENTORY_SKINS) {
-                if (all_skins[item.ItemID]) {
-                    result.push(all_skins[item.ItemID]);
+                if (ValorantClient.all_skins[item.ItemID]) {
+                    result.push(ValorantClient.all_skins[item.ItemID]);
                 }
             }
         }
@@ -320,6 +321,7 @@ export class ValorantClient {
         if (storefront === null) {
             return null;
         }
+
         const offers = {
             items: storefront.SkinsPanelLayout.SingleItemOffers,
             remaining_duration:

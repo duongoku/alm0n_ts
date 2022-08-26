@@ -121,6 +121,10 @@ export async function fetch() {
     await cache_items();
     console.timeEnd("Cache items");
 
+    // Update items
+    ValorantClient.all_skins = await ValorantClient.get_all_skins();
+    console.log("Skins updated");
+
     // Fetch competitive tiers icons
     console.log("Fetching competitive tiers icons...");
     console.time("Cache competitive tiers icons");
