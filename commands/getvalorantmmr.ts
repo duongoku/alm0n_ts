@@ -1,7 +1,7 @@
-// Load dependencies
 import * as fs from "fs";
 import axios from "axios";
-import { Message, MessageEmbed } from "discord.js";
+import { CommandInteraction, MessageEmbed } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
 async function get_mmr(
@@ -67,43 +67,57 @@ async function get_mmr_embed_message(
     }
 }
 
-export async function run(client: NewClient, message: Message, args: string[]) {
-    // Check if command is used correctly
-    if (args.length < 2) {
-        return message.channel.send(
-            "Please use the following format: `$getvalorantmmr <username> <tagline> [region]` or `$gvmmr <username> <tagline> [region]`"
+export async function run(client: NewClient, interaction: CommandInteraction) {
+    if (interaction.options.getString("region") === null) {
+        // Get MMR with default region (ap)
+        const mmr = await get_mmr_embed_message(
+            interaction.options.getString("username")!,
+            interaction.options.getString("tagline")!
         );
-    }
-
-    // Get MMR
-    if (args.length === 2) {
-        const mmr = await get_mmr_embed_message(args[0], args[1]);
         if (mmr === null) {
-            return message.channel.send("Can't get MMR for some reason");
+            return await interaction.editReply("Can't get MMR for some reason");
         }
-        return message.channel.send({
+        return await interaction.editReply({
             embeds: [mmr],
         });
-    }
-
-    // Get MMR with region
-    if (args.length === 3) {
-        const regions = ["ap", "kr", "na", "eu"];
-        if (!regions.includes(args[2])) {
-            return message.channel.send(
-                "Please use a valid region: `ap`, `kr`, `na` or `eu`"
-            );
-        }
-        const mmr = await get_mmr_embed_message(args[0], args[1], args[2]);
+    } else {
+        // Get MMR with regions
+        const mmr = await get_mmr_embed_message(
+            interaction.options.getString("username")!,
+            interaction.options.getString("tagline")!,
+            interaction.options.getString("region")!
+        );
         if (mmr === null) {
-            return message.channel.send("Can't get MMR for some reason");
+            return await interaction.editReply("Can't get MMR for some reason");
         }
-        return message.channel.send({
+        return await interaction.editReply({
             embeds: [mmr],
         });
     }
 }
 
-export const type = "Valorant";
-export const aliases = ["gvmmr"];
-export const description = "Get Valorant MMR for a player";
+export const data = new SlashCommandBuilder()
+    .setDescription("Get Valorant MMR for a player (default region is ap)")
+    .addStringOption((option) =>
+        option
+            .setName("username")
+            .setDescription("Enter your username")
+            .setRequired(true)
+    )
+    .addStringOption((option) =>
+        option
+            .setName("tagline")
+            .setDescription("Enter your tagline")
+            .setRequired(true)
+    )
+    .addStringOption((option) =>
+        option
+            .setName("region")
+            .setDescription("Enter your tagline")
+            .addChoices(
+                { name: "Asia Pacific server", value: "ap" },
+                { name: "Korea server", value: "kr" },
+                { name: "North America server", value: "na" },
+                { name: "Europe server", value: "eu" }
+            )
+    );

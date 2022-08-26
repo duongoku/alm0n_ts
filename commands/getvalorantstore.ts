@@ -1,10 +1,10 @@
-// Load dependencies
 import {
-    Message,
     MessageActionRow,
     MessageButton,
     MessageEmbed,
+    CommandInteraction,
 } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 import { ValorantClient } from "../utils/ValorantClient";
 
@@ -16,19 +16,23 @@ function get_embed_message(skins: any[], index: number) {
         .setFooter({ text: `Offer #${index + 1} in ${skins.length} offers` });
 }
 
-export async function run(client: NewClient, message: Message, args: string[]) {
-    // Don't need to check for arguments because this command is used without arguments
-    // Check if user has a riot account in database
-    const has_riot_account = await ValorantClient.check_riot_account(message);
+export async function run(client: NewClient, interaction: CommandInteraction) {
+    if (interaction.channel === null) {
+        return;
+    }
+
+    const has_riot_account = await ValorantClient.check_riot_account(
+        interaction
+    );
     if (!has_riot_account) {
-        return message.channel.send(
+        return await interaction.editReply(
             "You don't have a riot account saved in the database. Please use the following format: `$setriotusername <username>` or `$sru <username>` to save your username and `$setriotpassword <password>` or `$srp <password>` to save your password."
         );
     }
 
     // Get riot username and password from database
-    const riot_username = await ValorantClient.get_riot_username(message);
-    const riot_password = await ValorantClient.get_riot_password(message);
+    const riot_username = await ValorantClient.get_riot_username(interaction);
+    const riot_password = await ValorantClient.get_riot_password(interaction);
 
     // Get store offers
     const valorant_client = new ValorantClient();
@@ -37,7 +41,7 @@ export async function run(client: NewClient, message: Message, args: string[]) {
 
     // Check if offers is null
     if (offers == null) {
-        return message.channel.send(
+        return await interaction.editReply(
             "There was an error getting the offers, most likely because of wrong credentials. Please try again."
         );
     }
@@ -71,8 +75,8 @@ export async function run(client: NewClient, message: Message, args: string[]) {
 
     // Make embed message with buttons
     var current_index = 0;
-    await message.channel.send("Below are your store offers.");
-    const embed_message = await message.channel.send({
+    await interaction.editReply("Below are your store offers.");
+    const embed_message = await interaction.channel.send({
         embeds: [get_embed_message(skins, current_index)],
         components: [row],
     });
@@ -95,9 +99,9 @@ export async function run(client: NewClient, message: Message, args: string[]) {
     });
 }
 
-export const type = "Valorant";
-export const aliases = ["gvs"];
-export const description = "Get valorant store offers";
+export const data = new SlashCommandBuilder().setDescription(
+    "Get Valorant store offers"
+);
 
 // async function test() {
 //     const skin_name = await ValorantClient.get_skin_name(

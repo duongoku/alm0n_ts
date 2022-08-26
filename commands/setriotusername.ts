@@ -1,5 +1,5 @@
-// Load dependencies
-import { Message } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction } from "discord.js";
 import { NewClient } from "../index";
 
 import * as dotenv from "dotenv";
@@ -8,33 +8,38 @@ dotenv.config();
 const GETSETDB = process.env.GETSETDB!;
 
 async function save_riot_username(
-    message: Message,
+    interaction: CommandInteraction,
     username: string
 ): Promise<void> {
     const Client = require(GETSETDB);
     const client = new Client();
-    await client.set(`riot_username_${message.author.id}`, username);
+    await client.set(`riot_username_${interaction.user.id}`, username);
 }
 
-export async function run(client: NewClient, message: Message, args: string[]) {
-    // Check if message is direct message to bot
-    if (message.channel.type != "DM") {
-        return message.channel.send("You can only set your Riot Games username in DM (Direct Message).");
-    }
-
-    // Check if command is used correctly
-    if (args.length < 1) {
-        return message.channel.send(
-            "Please use the following format: `$setriotusername <username>` or `$sru <username>`"
+export async function run(client: NewClient, interaction: CommandInteraction) {
+    try {
+        // Check if message is direct message to bot
+        if (interaction.channel!.type != "DM") {
+            return await interaction.editReply(
+                "You can only set your Riot Games username in DM (Direct Message)."
+            );
+        }
+        // Save username in database
+        const username = interaction.options.getString("username")!;
+        await save_riot_username(interaction, username);
+        await interaction.editReply("Your username has been saved.");
+    } catch (error) {
+        return await interaction.editReply(
+            "Something went wrong! Please try again later."
         );
     }
-
-    // Save username in database
-    const username = args[0];
-    await save_riot_username(message, username);
-    message.channel.send("Your username has been saved.");
 }
 
-export const type = "Utility";
-export const aliases = ["sru"];
-export const description = "Set your Riot Games username";
+export const data = new SlashCommandBuilder()
+    .setDescription("Set your Riot Games username")
+    .addStringOption((option) =>
+        option
+            .setName("username")
+            .setDescription("Enter your username")
+            .setRequired(true)
+    );

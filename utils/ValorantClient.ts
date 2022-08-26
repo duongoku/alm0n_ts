@@ -2,7 +2,7 @@ import axios from "axios";
 import * as fs from "fs";
 
 import { Agent } from "https";
-import { Message } from "discord.js";
+import { CommandInteraction } from "discord.js";
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -82,15 +82,17 @@ export class ValorantClient {
 
     constructor() {}
 
-    static async check_riot_account(message: Message): Promise<boolean> {
+    static async check_riot_account(
+        interaction: CommandInteraction
+    ): Promise<boolean> {
         // Check if user has a riot account in database
         const Client = require(GETSETDB);
         const client = new Client();
         const riot_username = await client.get(
-            `riot_username_${message.author.id}`
+            `riot_username_${interaction.user.id}`
         );
         const riot_password = await client.get(
-            `riot_password_${message.author.id}`
+            `riot_password_${interaction.user.id}`
         );
         if (riot_username != null && riot_password != null) {
             return true;
@@ -98,22 +100,26 @@ export class ValorantClient {
         return false;
     }
 
-    static async get_riot_username(message: Message): Promise<string> {
+    static async get_riot_username(
+        interaction: CommandInteraction
+    ): Promise<string> {
         // Get riot username from database
         const Client = require(GETSETDB);
         const client = new Client();
         const riot_username = await client.get(
-            `riot_username_${message.author.id}`
+            `riot_username_${interaction.user.id}`
         );
         return riot_username as string;
     }
 
-    static async get_riot_password(message: Message): Promise<string> {
+    static async get_riot_password(
+        interaction: CommandInteraction
+    ): Promise<string> {
         // Get riot password from database
         const Client = require(GETSETDB);
         const client = new Client();
         const riot_password = await client.get(
-            `riot_password_${message.author.id}`
+            `riot_password_${interaction.user.id}`
         );
         return riot_password as string;
     }
@@ -290,7 +296,7 @@ export class ValorantClient {
 
         for (const item of items) {
             if (item.TypeID === ITEMTYPEID.INVENTORY_SKINS) {
-                if (all_skins[item.ItemID]){
+                if (all_skins[item.ItemID]) {
                     result.push(all_skins[item.ItemID]);
                 }
             }

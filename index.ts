@@ -2,12 +2,13 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-// Load dependencies
 import * as CGVFetcher from "./utils/CGVFetcher";
 import * as ValorantFetcher from "./utils/ValorantFetcher";
 import * as fs from "fs";
 import * as process from "process";
 import { Client, Intents, Collection } from "discord.js";
+import { REST } from "@discordjs/rest";
+import { Routes } from "discord-api-types/v10";
 
 // Create new client
 export class NewClient extends Client {
@@ -39,39 +40,49 @@ for (const file of events) {
 const commands = fs
     .readdirSync("./commands")
     .filter((file) => file.endsWith(".ts"));
-// Remove help command to add later
-if (commands.includes("help.ts")) {
-    commands.splice(commands.indexOf("help.ts"), 1);
-}
 for (const file of commands) {
     console.log(`Loading command in ${file}`);
     const command = require(`./commands/${file}`);
-    const command_name = file.slice(0, -3);
-    client.commands.set(command_name, command);
-    for (const alias of command.aliases) {
-        client.commands.set(alias, command);
-    }
+    command.data.setName(file.slice(0, -3));
+    client.commands.set(command.data.name, command);
 }
 
-// Add help command if exists
-if (fs.existsSync("./commands/help.ts")) {
-    console.log(`Loading command in help.ts`);
-    const command = require("./commands/help.ts");
-    client.commands.set("help", command);
-    for (const alias of command.aliases) {
-        client.commands.set(alias, command);
-    }
+// Check for token
+if (!process.env.DISCORD_BOT_TOKEN) {
+    console.log("No token found!");
+    process.exit(1);
 }
 
-// On client ready
-client.on("ready", () => {
-    console.log(`Logged in as ${client.user?.tag}!`);
-    setInterval(CGVFetcher.fetch, 1000 * 60 * 60 * 2);
-    setInterval(ValorantFetcher.fetch, 1000 * 60 * 60 * 3);
+const rest = new REST({ version: "10" }).setToken(
+    process.env.DISCORD_BOT_TOKEN
+);
+
+client.on("ready", async () => {
+    // Check if client user is available
+    if (client.user === null) {
+        console.log("Client user is not available!");
+        process.exit(1);
+    }
+    console.log(`Logged in as ${client.user.tag}!`);
+
+    // Register commands
+    try {
+        console.log("Started refreshing application (/) commands.");
+
+        await rest.put(Routes.applicationCommands(client.user.id), {
+            body: client.commands.map((cmd) => cmd.data.toJSON()),
+        });
+
+        console.log("Successfully reloaded application (/) commands.");
+    } catch (error) {
+        console.error(error);
+    }
+
+    // Start data fetchers
+    // setInterval(CGVFetcher.fetch, 1000 * 60 * 60 * 2);
+    // setInterval(ValorantFetcher.fetch, 1000 * 60 * 60 * 3);
 });
 
-// On debug
 client.on("debug", console.log);
 
-// Login
 client.login(process.env.DISCORD_BOT_TOKEN);

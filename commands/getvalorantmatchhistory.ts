@@ -1,15 +1,16 @@
-// Load dependencies
 import * as fs from "fs";
 import * as process from "process";
 import axios from "axios";
 import { DateTime } from "luxon";
 import { Canvas, createCanvas, loadImage, registerFont } from "canvas";
 import {
-    Message,
+    CommandInteraction,
     MessageEmbed,
     MessageActionRow,
     MessageButton,
+    ButtonInteraction,
 } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
 // Register canvas font
@@ -484,41 +485,18 @@ function rename_match_type(match_type: string): string {
     return match_type;
 }
 
-export async function run(client: NewClient, message: Message, args: string[]) {
-    // Check if command is used correctly
-    if (args.length < 3) {
-        return message.channel.send(
-            "Please use the following format: `$getvalorantmatchhistory <username> <tagline> <match_type>` or `$gvmh <username> <tagline> <match_type>`"
-        );
-    }
-    const username = args[0];
-    const tagline = args[1];
-    const match_type = args[2];
-    const match_types = [
-        "competitive",
-        "unrated",
-        "compe",
-        "normal",
-        "spikerush",
-        "rush",
-        "custom",
-    ];
-    if (!match_types.includes(match_type)) {
-        return message.channel.send(
-            "Please use a valid match type: `competitive`, `unrated` or `spikerush`"
-        );
-    }
+export async function run(client: NewClient, interaction: CommandInteraction) {
+    const username = interaction.options.getString("username")!;
+    const tagline = interaction.options.getString("tagline")!;
+    const match_type = interaction.options.getString("match_type")!;
     try {
         // Get match history
-        const matches = await get_match_history(
-            username,
-            tagline,
-            rename_match_type(match_type)
-        );
+        const matches = await get_match_history(username, tagline, match_type);
         if (matches.length === 0) {
-            return message.channel.send(
+            await interaction.editReply(
                 "No matches found with the given criteria"
             );
+            return;
         }
 
         // Create row of buttons
@@ -544,10 +522,11 @@ export async function run(client: NewClient, message: Message, args: string[]) {
 
         // Make embed message with buttons
         var current_match = 0;
-        await message.channel.send(
+        await interaction.editReply(
             "Below is your match history (5 latest matches)"
         );
-        const embed_message = await message.channel.send({
+        const embed_message = await interaction.channel!.send({
+            content: "Below is your match history (5 latest matches)",
             embeds: [get_match_embed_message(matches, current_match)],
             components: [row],
         });
@@ -555,7 +534,7 @@ export async function run(client: NewClient, message: Message, args: string[]) {
             // filter: ({ user }) => user.id === message.author.id,
             time: 60000,
         });
-        collector.on("collect", async (interaction) => {
+        collector.on("collect", async (interaction: ButtonInteraction) => {
             if (interaction.customId === "next") {
                 current_match += 1;
                 current_match %= matches.length;
@@ -578,18 +557,41 @@ export async function run(client: NewClient, message: Message, args: string[]) {
                     content: "Below are details about the match",
                     files: [details_image],
                 });
-                // message.channel.send({ files: [details_image] });
+                // await interaction.editReply({ files: [details_image] });
             }
         });
         return null;
     } catch (error) {
         console.log("Error: ", (error as Error).message);
-        return message.channel.send(
+        return await interaction.editReply(
             "There was an error trying to execute that command!"
         );
     }
 }
 
-export const type = "Valorant";
-export const aliases = ["gvmh"];
-export const description = "Get a list of Valorant matches for a given user";
+export const data = new SlashCommandBuilder()
+    .setDescription("Get a list of Valorant matches for a given user")
+    .addStringOption((option) =>
+        option
+            .setName("username")
+            .setDescription("Enter your username")
+            .setRequired(true)
+    )
+    .addStringOption((option) =>
+        option
+            .setName("tagline")
+            .setDescription("Enter your tagline")
+            .setRequired(true)
+    )
+    .addStringOption((option) =>
+        option
+            .setName("match_type")
+            .setDescription("Enter match type")
+            .addChoices(
+                { name: "Competitive", value: "competitive" },
+                { name: "Unrated", value: "unrated" },
+                { name: "Spikerush", value: "spikerush" },
+                { name: "Custom", value: "custom" }
+            )
+            .setRequired(true)
+    );

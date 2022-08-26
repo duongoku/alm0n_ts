@@ -1,7 +1,7 @@
-// Load dependencies
 import axios from "axios";
 import process from "process";
-import { Message } from "discord.js";
+import { CommandInteraction } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
 async function check_currency(currency: string): Promise<boolean> {
@@ -71,24 +71,17 @@ async function get_converted_currency(
         });
 }
 
-export async function run(client: NewClient, message: Message, args: string[]) {
-    // Check if command is used correctly
-    if (args.length < 3) {
-        return message.channel.send(
-            "Please use the following format: `$convert <src_curr> <dst_curr> <amount>`"
-        );
-    }
-
+export async function run(client: NewClient, interaction: CommandInteraction) {
     try {
         // Check if currencies are valid
-        const src_curr = args[0];
-        const dst_curr = args[1];
-        const amount = Number(args[2]);
+        const src_curr = interaction.options.getString("source_currency")!;
+        const dst_curr = interaction.options.getString("destination_currency")!;
+        const amount = interaction.options.getNumber("amount")!;
         if (
             !(await check_currency(src_curr)) ||
             !(await check_currency(dst_curr))
         ) {
-            return message.channel.send(
+            return await interaction.editReply(
                 "Invalid currency. Please use the following format: `$convert <src_curr> <dst_curr> <amount>`"
             );
         }
@@ -101,15 +94,32 @@ export async function run(client: NewClient, message: Message, args: string[]) {
         );
 
         // Send message
-        return message.channel.send(converted_currency);
+        return await interaction.editReply(converted_currency);
     } catch (error) {
         console.log("Error: ", (error as Error).message);
-        return message.channel.send(
+        return await interaction.editReply(
             "There was an error trying to execute that command!"
         );
     }
 }
 
-export const type = "Utility";
-export const aliases = ["cv"];
-export const description = "Convert currencies";
+export const data = new SlashCommandBuilder()
+    .setDescription("Convert currencies")
+    .addStringOption((option) =>
+        option
+            .setName("source_currency")
+            .setDescription("Enter your source currency")
+            .setRequired(true)
+    )
+    .addStringOption((option) =>
+        option
+            .setName("destinatio_currency")
+            .setDescription("Enter your destination currency")
+            .setRequired(true)
+    )
+    .addNumberOption((option) =>
+        option
+            .setName("amount")
+            .setDescription("Enter the amount to convert")
+            .setRequired(true)
+    );

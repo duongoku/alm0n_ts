@@ -1,15 +1,14 @@
-// Load dependencies
 import * as fs from "fs";
 import axios from "axios";
 import process from "process";
 import {
-    Message,
+    CommandInteraction,
     MessageActionRow,
     MessageButton,
     MessageComponentInteraction,
     MessageEmbed,
-    EmbedFooterData,
 } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 import { City, Day, Film } from "../utils/CGVFetcher";
 
@@ -131,8 +130,10 @@ function get_navigation_row(): MessageActionRow {
     return row;
 }
 
-export async function run(client: NewClient, message: Message, args: string[]) {
-    // Don't need to check for arguments because this command is used without arguments
+export async function run(client: NewClient, interaction: CommandInteraction) {
+    if (interaction.channel === null) {
+        return;
+    }
 
     // Get list of cities
     const cities = get_cgv_cities_from_file();
@@ -150,14 +151,14 @@ export async function run(client: NewClient, message: Message, args: string[]) {
     let films: Film[] = [];
     let selected_day: Day;
 
-    const embed_message = await message.reply({
+    const embed_message = await interaction.channel!.send({
         embeds: [new MessageEmbed().setTitle("Please select a city")],
         components: [selrow, navrow],
     });
 
     const collector = embed_message.createMessageComponentCollector({
         filter: ({ user }) => {
-            return user.id === message.author.id;
+            return user.id === interaction.user.id;
         },
         time: 60000,
     });
@@ -262,14 +263,14 @@ export async function run(client: NewClient, message: Message, args: string[]) {
         }
     }
 
-    collector.on("collect", buttonHandler).on("error", (err) => {
+    collector.on("collect", buttonHandler).on("error", (err: any) => {
         console.log(err);
     });
 }
 
-export const type = "Utility";
-export const aliases = ["cgv"];
-export const description = "Get CGV film schedule from https://www.cgv.vn/";
+export const data = new SlashCommandBuilder().setDescription(
+    "Get CGV film schedule from https://www.cgv.vn/"
+);
 
 // async function test() {
 //     let res = await get_in_theaters(

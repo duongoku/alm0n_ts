@@ -1,7 +1,7 @@
-// Load dependencies
 import axios from "axios";
 import moment from "moment-timezone";
-import { Message, MessageEmbed } from "discord.js";
+import { CommandInteraction, MessageEmbed } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
 type MCServer = {
@@ -65,13 +65,10 @@ async function get_server_status(server_ip: string) {
     return server;
 }
 
-export async function run(client: NewClient, message: Message, args: string[]) {
-    // Check args
-    if (args.length < 1) {
-        return message.channel.send("Please specify a server to check");
-    }
-
-    const server = await get_server_status(args[0]);
+export async function run(client: NewClient, interaction: CommandInteraction) {
+    const server = await get_server_status(
+        interaction.options.getString("server")!
+    );
 
     if (server.available) {
         const embed = new MessageEmbed()
@@ -98,14 +95,17 @@ export async function run(client: NewClient, message: Message, args: string[]) {
                 { name: "Players", value: server.players.join(", ") },
             ]);
         }
-        return message.channel.send({ embeds: [embed] });
+        return await interaction.editReply({ embeds: [embed] });
     } else {
-        return message.channel.send(
-            "Server not found :smiling_face_with_tear:"
-        );
+        return await interaction.editReply("Server not found :smiling_face_with_tear:");
     }
 }
 
-export const type = "Minecraft";
-export const aliases = ["gmc"];
-export const description = "Get Minecraft server status";
+export const data = new SlashCommandBuilder()
+    .setDescription("Get Minecraft server status")
+    .addStringOption((option) =>
+        option
+            .setName("server")
+            .setDescription("Enter your server IP")
+            .setRequired(true)
+    );

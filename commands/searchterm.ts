@@ -1,7 +1,7 @@
-// Load dependencies
 import axios from "axios";
 import cheerio from "cheerio";
-import { Message } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction } from "discord.js";
 import { NewClient } from "../index";
 
 async function get_definition_and_example(word: string) {
@@ -32,20 +32,22 @@ async function get_definition_and_example(word: string) {
         });
 }
 
-export async function run(client: NewClient, message: Message, args: string[]) {
-    if (args.length < 1) {
-        return message.channel.send("Please specify a word to search");
-    }
-    const word = args.join(" ");
-    const result = await get_definition_and_example(word);
+export async function run(client: NewClient, interaction: CommandInteraction) {
+    const term = interaction.options.getString("term")!;
+    const result = await get_definition_and_example(term);
     if (result === "Error") {
-        return message.channel.send("Error");
+        return await interaction.editReply("Error");
     }
-    return message.channel.send(
-        `**${word}**\n\n**Definition:**\n${result[0]}\n\n**Example:**\n${result[1]}`
+    return await interaction.editReply(
+        `**${term}**\n\n**Definition:**\n${result[0]}\n\n**Example:**\n${result[1]}`
     );
 }
 
-export const type = "Utility";
-export const aliases = ["sw"];
-export const description = "Search for a word using urban dictionary";
+export const data = new SlashCommandBuilder()
+    .setDescription("Search for a term using urban dictionary")
+    .addStringOption((option) =>
+        option
+            .setName("term")
+            .setDescription("Enter a search term")
+            .setRequired(true)
+    );

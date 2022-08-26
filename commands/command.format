@@ -1,11 +1,16 @@
-// Load dependencies
-import { Message } from "discord.js";
+import { CommandInteraction } from "discord.js";
+import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
-export function run(client: NewClient, message: Message, args: string[]) {
+export function run(client: NewClient, interaction: CommandInteraction) {
     // Do command stuff here
 }
 
-export const type = ;
-export const aliases = [];
-export const description = ;
+export const data = new SlashCommandBuilder()
+    .setDescription("Description")
+    .addStringOption((option) =>
+        option
+            .setName("Option")
+            .setDescription("Option")
+            .setRequired(true)
+    );
