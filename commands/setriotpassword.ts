@@ -18,12 +18,6 @@ async function save_riot_password(
 
 export async function run(client: NewClient, interaction: CommandInteraction) {
     try {
-        // Check if message is direct message to bot
-        if (interaction.channel!.type != "DM") {
-            return await interaction.editReply(
-                "You can only set your Riot Games password in DM (Direct Message)."
-            );
-        }
         // Save password in database
         const password = interaction.options.getString("password")!;
         await save_riot_password(interaction, password);

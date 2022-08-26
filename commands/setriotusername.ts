@@ -18,12 +18,6 @@ async function save_riot_username(
 
 export async function run(client: NewClient, interaction: CommandInteraction) {
     try {
-        // Check if message is direct message to bot
-        if (interaction.channel!.type != "DM") {
-            return await interaction.editReply(
-                "You can only set your Riot Games username in DM (Direct Message)."
-            );
-        }
         // Save username in database
         const username = interaction.options.getString("username")!;
         await save_riot_username(interaction, username);

@@ -1,6 +1,8 @@
 import { Interaction } from "discord.js";
 import { NewClient } from "../index";
 
+const hiddenCommands = ["setriotusername", "setriotpassword"];
+
 export async function run(client: NewClient, interaction: Interaction) {
     if (!interaction.isCommand()) return;
 
@@ -10,12 +12,18 @@ export async function run(client: NewClient, interaction: Interaction) {
 
     if (!command) return;
 
-    interaction.deferReply();
+    if (hiddenCommands.includes(commandName)) {
+        await interaction.deferReply({ ephemeral: true });
+    } else {
+        await interaction.deferReply();
+    }
 
     try {
         command.run(client, interaction);
     } catch (error) {
         console.log("Error: ", (error as Error).message);
-        await interaction.editReply("There was an error trying to execute that command!");
+        await interaction.editReply(
+            "There was an error trying to execute that command!"
+        );
     }
 }
