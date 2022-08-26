@@ -526,7 +526,6 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
             "Below is your match history (5 latest matches)"
         );
         const embed_message = await interaction.channel!.send({
-            content: "Below is your match history (5 latest matches)",
             embeds: [get_match_embed_message(matches, current_match)],
             components: [row],
         });
