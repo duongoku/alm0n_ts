@@ -49,6 +49,9 @@ const agent = new Agent({
 });
 // This piece of code is from https://github.com/liamcottle/valorant.js/pull/22
 
+const riotClientUserAgent =
+    "RiotClient/58.0.0.4640299.4552318 rso-auth (Windows;10;;Professional, x64)";
+
 export interface Skin {
     name: string;
     icon: string;
@@ -159,16 +162,22 @@ export class ValorantClient {
         const response1 = await axios.post(
             url,
             {
-                client_id: "play-valorant-web-prod",
+                acr_values: "",
+                claims: "",
+                client_id: "riot-client",
+                code_challenge: "",
+                code_challenge_method: "",
                 nonce: "1",
-                redirect_uri: "https://playvalorant.com/opt_in",
+                redirect_uri: "http://localhost/redirect",
                 response_type: "token id_token",
-                scope: "account openid",
+                scope: "openid link ban lol_region account",
             },
             {
                 headers: {
-                    "User-Agent":
-                        "RiotClient/43.0.1.4195386.4190634 rso-auth (Windows; 10;;Professional, x64)",
+                    "Accept-Encoding": "deflate, gzip, zstd",
+                    "User-Agent": riotClientUserAgent,
+                    "Cache-Control": "no-cache",
+                    Accept: "application/json",
                 },
                 httpsAgent: agent,
             }
@@ -185,8 +194,7 @@ export class ValorantClient {
             },
             {
                 headers: {
-                    "User-Agent":
-                        "RiotClient/43.0.1.4195386.4190634 rso-auth (Windows; 10;;Professional, x64)",
+                    "User-Agent": riotClientUserAgent,
                     cookie: cookies,
                 },
                 httpsAgent: agent,
