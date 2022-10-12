@@ -7,9 +7,9 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
     const connection = getVoiceConnection(interaction.guildId!);
     if (connection) {
         connection.destroy();
-        interaction.reply("Disconnected from voice channel!");
+        interaction.editReply("Disconnected from voice channel!");
     } else {
-        interaction.reply("I'm not connected to a voice channel!");
+        interaction.editReply("I'm not connected to a voice channel!");
     }
 }
 

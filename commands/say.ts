@@ -125,7 +125,7 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
     }
 
     if (channel) {
-        interaction.reply({ content: "I'm saying that!", ephemeral: true });
+        interaction.editReply("I'm saying that!");
         var player = players_map.get(member.guild?.id);
         try {
             const connection = await connectToChannel(channel, player);
@@ -139,7 +139,7 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
             console.error(error);
         }
     } else {
-        await interaction.reply("Join a voice channel then try again!");
+        await interaction.editReply("Join a voice channel then try again!");
     }
 }
 
