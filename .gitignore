@@ -114,3 +114,4 @@ log.txt
 match.png
 *.db
 test.ts
+serviceaccount.json
