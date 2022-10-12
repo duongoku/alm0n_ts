@@ -125,6 +125,7 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
     }
 
     if (channel) {
+        interaction.reply({ content: "I'm saying that!", ephemeral: true });
         var player = players_map.get(member.guild?.id);
         try {
             const connection = await connectToChannel(channel, player);
