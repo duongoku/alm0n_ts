@@ -63,7 +63,7 @@ async function playTTS(
     });
 
     if (is_playing(player)) {
-        interaction.reply("Wait for the previous tts to finish first!");
+        interaction.editReply("Wait for the previous tts to finish first!");
         return false;
     }
 
