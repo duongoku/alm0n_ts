@@ -1,7 +1,7 @@
 import { Interaction } from "discord.js";
 import { NewClient } from "../index";
 
-const hiddenCommands = ["setriotusername", "setriotpassword", "say"];
+const hiddenCommands = ["setriotusername", "setriotpassword"];
 
 export async function run(client: NewClient, interaction: Interaction) {
     if (!interaction.isCommand()) return;

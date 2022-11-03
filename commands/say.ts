@@ -115,6 +115,13 @@ async function connectToChannel(
     }
 }
 
+function preCheck(text: String) {
+    if (text.split(" ").length > 20) {
+        return false;
+    }
+    return true;
+}
+
 export async function run(client: NewClient, interaction: CommandInteraction) {
     const member = interaction.member as GuildMember;
     const channel = member.voice.channel;
@@ -125,18 +132,22 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
     }
 
     if (channel) {
-        interaction.editReply("I'm saying that!");
-        var player = players_map.get(member.guild?.id);
-        try {
-            const connection = await connectToChannel(channel, player);
-            if (!connection) {
-                await playTTS(interaction, text, player);
-            } else {
-                connection.subscribe(player);
-                await playTTS(interaction, text, player);
+        if (preCheck(text)) {
+            interaction.editReply(`${member.displayName} said: ${text}`);
+            var player = players_map.get(member.guild?.id);
+            try {
+                const connection = await connectToChannel(channel, player);
+                if (!connection) {
+                    await playTTS(interaction, text, player);
+                } else {
+                    connection.subscribe(player);
+                    await playTTS(interaction, text, player);
+                }
+            } catch (error) {
+                console.error(error);
             }
-        } catch (error) {
-            console.error(error);
+        } else {
+            interaction.editReply("Too many words!");
         }
     } else {
         await interaction.editReply("Join a voice channel then try again!");
