@@ -35,7 +35,14 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
 
     // Get store offers
     const valorant_client = new ValorantClient();
-    await valorant_client.init(riot_username, riot_password);
+    try {
+        await valorant_client.init(riot_username, riot_password);
+    } catch (err) {
+        console.log(err);
+        return await interaction.editReply(
+            "Some errors occured while trying to login. Please try again later."
+        );
+    }
     const skins = await valorant_client.get_inventory();
 
     // Check if inventory is null
