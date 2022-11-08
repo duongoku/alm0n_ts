@@ -2,7 +2,7 @@ import axios from "axios";
 import * as fs from "fs";
 
 import { Agent } from "https";
-import { CommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -49,8 +49,16 @@ const agent = new Agent({
 });
 // This piece of code is from https://github.com/liamcottle/valorant.js/pull/22
 
-const riotClientUserAgent =
-    "RiotClient/58.0.0.4640299.4552318 rso-auth (Windows;10;;Professional, x64)";
+const riotClientUserAgent = process.env.RIOT_CLIENT_USER_AGENT!;
+const riotClientVersion = process.env.RIOT_CLIENT_VERSION!;
+const clientPlatform = Buffer.from(
+    JSON.stringify({
+        platformType: "PC",
+        platformOS: "Windows",
+        platformOSVersion: "10.0.19042.1.256.64bit",
+        platformChipset: "Unknown",
+    })
+).toString("base64");
 
 export interface Skin {
     name: string;
@@ -78,9 +86,13 @@ export class ValorantClient {
     global_headers: {
         Authorization: string;
         "X-Riot-Entitlements-JWT": string;
+        "X-Riot-ClientVersion": string;
+        "X-Riot-ClientPlatform": string;
     } = {
         Authorization: "",
         "X-Riot-Entitlements-JWT": "",
+        "X-Riot-ClientVersion": "",
+        "X-Riot-ClientPlatform": "",
     };
 
     static all_skins: { [x: string]: Skin } = {};
@@ -91,7 +103,7 @@ export class ValorantClient {
         "You don't have a riot account saved in the database. Please register using /setriotusername and /setriotpassword.";
 
     static async check_riot_account(
-        interaction: CommandInteraction
+        interaction: ChatInputCommandInteraction
     ): Promise<boolean> {
         // Check if user has a riot account in database
         const Client = require(GETSETDB);
@@ -109,7 +121,7 @@ export class ValorantClient {
     }
 
     static async get_riot_username(
-        interaction: CommandInteraction
+        interaction: ChatInputCommandInteraction
     ): Promise<string> {
         // Get riot username from database
         const Client = require(GETSETDB);
@@ -121,7 +133,7 @@ export class ValorantClient {
     }
 
     static async get_riot_password(
-        interaction: CommandInteraction
+        interaction: ChatInputCommandInteraction
     ): Promise<string> {
         // Get riot password from database
         const Client = require(GETSETDB);
@@ -153,6 +165,8 @@ export class ValorantClient {
         this.global_headers = {
             Authorization: `${this.access_token.type} ${this.access_token.token}`,
             "X-Riot-Entitlements-JWT": this.rso_token,
+            "X-Riot-ClientVersion": riotClientVersion,
+            "X-Riot-ClientPlatform": clientPlatform,
         };
     }
 
@@ -164,20 +178,17 @@ export class ValorantClient {
             {
                 acr_values: "",
                 claims: "",
-                client_id: "riot-client",
+                client_id: "play-valorant-web-prod",
                 code_challenge: "",
                 code_challenge_method: "",
                 nonce: "1",
-                redirect_uri: "http://localhost/redirect",
+                redirect_uri: "https://playvalorant.com/opt_in",
                 response_type: "token id_token",
-                scope: "openid link ban lol_region account",
+                scope: "play-valorant-web-prod",
             },
             {
                 headers: {
-                    "Accept-Encoding": "deflate, gzip, zstd",
                     "User-Agent": riotClientUserAgent,
-                    "Cache-Control": "no-cache",
-                    Accept: "application/json",
                 },
                 httpsAgent: agent,
             }
@@ -369,3 +380,22 @@ export class ValorantClient {
 (async () => {
     ValorantClient.all_skins = await ValorantClient.get_all_skins();
 })();
+
+// (async () => {
+//     await axios.post(
+//         "https://auth.riotgames.com/api/v1/authorization",
+//         {
+//           client_id: "play-valorant-web-prod",
+//           nonce: 1,
+//           redirect_uri: "https://playvalorant.com/opt_in",
+//           response_type: "token id_token",
+//           scope: "account openid",
+//         },
+//         {
+//           headers: {
+//             "User-Agent": riotClientUserAgent,
+//           },
+//           httpsAgent: agent,
+//         }
+//       )
+// })();
