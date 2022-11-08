@@ -545,7 +545,7 @@ export async function run(
         time: 60000,
     });
 
-    collector.on(Events.InteractionCreate, async (i) => {
+    collector.on("collect", async (i) => {
         if (!i.isButton()) return;
         if (i.customId === "next") {
             current_match += 1;

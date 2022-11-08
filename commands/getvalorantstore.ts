@@ -105,8 +105,7 @@ export async function run(
         time: 60000,
     });
 
-    collector.on(Events.InteractionCreate, (i) => {
-        console.log("Button pressed");
+    collector.on("collect", (i) => {
         if (!i.isButton()) return;
         if (i.customId === "next") {
             current_index += 1;
