@@ -19,7 +19,7 @@ export async function run(client: NewClient, interaction: Interaction) {
     }
 
     try {
-        command.run(client, interaction);
+        await command.run(client, interaction);
     } catch (error) {
         console.log("Error: ", (error as Error).message);
         await interaction.editReply(
