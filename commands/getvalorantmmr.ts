@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import axios from "axios";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
@@ -55,7 +55,7 @@ async function get_mmr_embed_message(
         const elo = res.data.data.elo;
         const rank = res.data.data.currenttierpatched;
         const tier = res.data.data.currenttier;
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setColor("#7a8181")
             .setTitle(`${username}#${tagline}`)
             .setDescription(`Elo: ${elo}\nRank: ${rank}`)
@@ -67,7 +67,7 @@ async function get_mmr_embed_message(
     }
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     if (interaction.options.getString("region") === null) {
         // Get MMR with default region (ap)
         const mmr = await get_mmr_embed_message(

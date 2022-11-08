@@ -1,9 +1,9 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { NewClient } from "../index";
 import { ValorantClient } from "../utils/ValorantClient";
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     const has_riot_account = await ValorantClient.check_riot_account(
         interaction
     );

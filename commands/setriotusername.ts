@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { NewClient } from "../index";
 
 import * as dotenv from "dotenv";
@@ -8,7 +8,7 @@ dotenv.config();
 const GETSETDB = process.env.GETSETDB!;
 
 async function save_riot_username(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
     username: string
 ): Promise<void> {
     const Client = require(GETSETDB);
@@ -16,7 +16,7 @@ async function save_riot_username(
     await client.set(`riot_username_${interaction.user.id}`, username);
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     try {
         // Save username in database
         const username = interaction.options.getString("username")!;

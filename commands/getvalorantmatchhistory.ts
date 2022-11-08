@@ -4,11 +4,14 @@ import axios from "axios";
 import { DateTime } from "luxon";
 import { Canvas, createCanvas, loadImage, registerFont } from "canvas";
 import {
-    CommandInteraction,
-    MessageEmbed,
-    MessageActionRow,
-    MessageButton,
+    ActionRowBuilder,
+    ButtonBuilder,
     ButtonInteraction,
+    ButtonStyle,
+    ChatInputCommandInteraction,
+    ComponentType,
+    EmbedBuilder,
+    Events,
 } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
@@ -240,8 +243,8 @@ async function make_canvas_table(players: Player[]): Promise<Canvas> {
             agent_image,
             10,
             header_row_height +
-                i * rows_height +
-                (rows_height - agent_image_size) / 2,
+            i * rows_height +
+            (rows_height - agent_image_size) / 2,
             agent_image_size,
             agent_image_size
         );
@@ -269,8 +272,8 @@ async function make_canvas_table(players: Player[]): Promise<Canvas> {
             rank_image,
             columns[1].offset + (columns[1].width - rank_image_size) / 2,
             header_row_height +
-                i * rows_height +
-                (rows_height - rank_image_size) / 2,
+            i * rows_height +
+            (rows_height - rank_image_size) / 2,
             rank_image_size,
             rank_image_size
         );
@@ -455,10 +458,10 @@ async function get_match_history(
 function get_match_embed_message(
     matches: Match[],
     current_match: number
-): MessageEmbed {
+): EmbedBuilder {
     // Make embed message for a match
     const match = matches[current_match];
-    const embed = new MessageEmbed()
+    const embed = new EmbedBuilder()
         .setColor("#0099ff")
         .setTitle(`${match.mode} Game - Map ${match.mapName}`)
         .setDescription(
@@ -485,87 +488,90 @@ function rename_match_type(match_type: string): string {
     return match_type;
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(
+    client: NewClient,
+    interaction: ChatInputCommandInteraction
+) {
     const username = interaction.options.getString("username")!;
     const tagline = interaction.options.getString("tagline")!;
     const match_type = interaction.options.getString("match_type")!;
-    try {
-        // Get match history
-        const matches = await get_match_history(username, tagline, match_type);
-        if (matches.length === 0) {
-            await interaction.editReply(
-                "No matches found with the given criteria"
-            );
-            return;
-        }
 
-        // Create row of buttons
-        const row = new MessageActionRow();
-        row.addComponents(
-            new MessageButton()
-                .setCustomId("prev")
-                .setLabel("Previous")
-                .setStyle("PRIMARY")
-        );
-        row.addComponents(
-            new MessageButton()
-                .setCustomId("next")
-                .setLabel("Next")
-                .setStyle("PRIMARY")
-        );
-        row.addComponents(
-            new MessageButton()
-                .setCustomId("details")
-                .setLabel("Details")
-                .setStyle("SUCCESS")
-        );
-
-        // Make embed message with buttons
-        var current_match = 0;
+    // Get match history
+    const matches = await get_match_history(username, tagline, match_type);
+    if (matches.length === 0) {
         await interaction.editReply(
-            "Below is your match history (5 latest matches)"
+            "No matches found with the given criteria"
         );
-        const embed_message = await interaction.channel!.send({
-            embeds: [get_match_embed_message(matches, current_match)],
-            components: [row],
-        });
-        const collector = embed_message.createMessageComponentCollector({
-            // filter: ({ user }) => user.id === message.author.id,
-            time: 60000,
-        });
-        collector.on("collect", async (interaction: ButtonInteraction) => {
-            if (interaction.customId === "next") {
-                current_match += 1;
-                current_match %= matches.length;
-                interaction.update({
-                    embeds: [get_match_embed_message(matches, current_match)],
-                });
-            } else if (interaction.customId === "prev") {
-                current_match -= 1;
-                current_match += matches.length;
-                current_match %= matches.length;
-                interaction.update({
-                    embeds: [get_match_embed_message(matches, current_match)],
-                });
-            } else if (interaction.customId === "details") {
-                interaction.deferReply();
-                const details_image = await get_match_details_image(
-                    matches[current_match].id
-                );
-                interaction.editReply({
-                    content: "Below are details about the match",
-                    files: [details_image],
-                });
-                // await interaction.editReply({ files: [details_image] });
-            }
-        });
-        return null;
-    } catch (error) {
-        console.log("Error: ", (error as Error).message);
-        return await interaction.editReply(
-            "There was an error trying to execute that command!"
-        );
+        return;
     }
+
+    // Create row of buttons
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    row.addComponents(
+        new ButtonBuilder()
+            .setCustomId("prev")
+            .setLabel("Previous")
+            .setStyle(ButtonStyle.Primary)
+    );
+    row.addComponents(
+        new ButtonBuilder()
+            .setCustomId("next")
+            .setLabel("Next")
+            .setStyle(ButtonStyle.Primary)
+    );
+    row.addComponents(
+        new ButtonBuilder()
+            .setCustomId("details")
+            .setLabel("Details")
+            .setStyle(ButtonStyle.Success)
+    );
+
+    // Make embed message with buttons
+    var current_match = 0;
+    await interaction.editReply(
+        "Below is your match history (5 latest matches)"
+    );
+    const embed_message = await interaction.channel!.send({
+        embeds: [get_match_embed_message(matches, current_match)],
+        components: [row],
+    });
+
+    const collector = embed_message.createMessageComponentCollector({
+        componentType: ComponentType.Button,
+        filter: (i: ButtonInteraction) => {
+            return true;
+            return i.user.id === interaction.user.id;
+        },
+        time: 60000,
+    });
+
+    collector.on(Events.InteractionCreate, async (i) => {
+        if (!i.isButton()) return;
+        if (i.customId === "next") {
+            current_match += 1;
+            current_match %= matches.length;
+            i.update({
+                embeds: [get_match_embed_message(matches, current_match)],
+            });
+        } else if (i.customId === "prev") {
+            current_match -= 1;
+            current_match += matches.length;
+            current_match %= matches.length;
+            i.update({
+                embeds: [get_match_embed_message(matches, current_match)],
+            });
+        } else if (i.customId === "details") {
+            i.deferReply();
+            const details_image = await get_match_details_image(
+                matches[current_match].id
+            );
+            i.editReply({
+                content: "Below are details about the match",
+                files: [details_image],
+            });
+            // await interaction.editReply({ files: [details_image] });
+        }
+    });
 }
 
 export const data = new SlashCommandBuilder()

@@ -1,6 +1,6 @@
 import axios from "axios";
 import moment from "moment-timezone";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
@@ -65,30 +65,29 @@ async function get_server_status(server_ip: string) {
     return server;
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     const server = await get_server_status(
         interaction.options.getString("server")!
     );
 
     if (server.available) {
-        const embed = new MessageEmbed()
+        const embed = new EmbedBuilder()
             .setTitle(server.hostname)
             .setColor(0x5b8731)
             .setDescription(
                 `Status: ${server.online ? "Online" : "Offline"}\n` +
-                    `Version: ${server.version}\n` +
-                    `Players: ${server.player_count}/${server.max_players}\n` +
-                    `MOTD: ${server.motd}`
+                `Version: ${server.version}\n` +
+                `Players: ${server.player_count}/${server.max_players}\n` +
+                `MOTD: ${server.motd}`
             )
             .setFooter({
-                text: `Last updated: ${
-                    server.last_update == 0
-                        ? "Now"
-                        : moment
-                              .unix(server.last_update)
-                              .tz("Asia/Ho_Chi_Minh")
-                              .format("hh:mm:ss DD/MM/YYYY")
-                }`,
+                text: `Last updated: ${server.last_update == 0
+                    ? "Now"
+                    : moment
+                        .unix(server.last_update)
+                        .tz("Asia/Ho_Chi_Minh")
+                        .format("hh:mm:ss DD/MM/YYYY")
+                    }`,
             });
         if (server.players.length > 0) {
             embed.addFields([

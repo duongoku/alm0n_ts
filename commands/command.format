@@ -1,8 +1,8 @@
-import { CommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
-export function run(client: NewClient, interaction: CommandInteraction) {
+export function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     // Do command stuff here
 }
 

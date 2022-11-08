@@ -1,15 +1,19 @@
 import {
-    CommandInteraction,
-    MessageEmbed,
-    MessageActionRow,
-    MessageButton,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonInteraction,
+    ButtonStyle,
+    ChatInputCommandInteraction,
+    ComponentType,
+    EmbedBuilder,
+    Events,
 } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 import { ValorantClient } from "../utils/ValorantClient";
 
 function get_embed_message(skins: any[], index: number) {
-    return new MessageEmbed()
+    return new EmbedBuilder()
         .setColor("#0099ff")
         .setTitle(`${skins[index].name}`)
         .setDescription(
@@ -19,7 +23,10 @@ function get_embed_message(skins: any[], index: number) {
         .setFooter({ text: `Offer #${index + 1} in ${skins.length} offers` });
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(
+    client: NewClient,
+    interaction: ChatInputCommandInteraction
+) {
     if (interaction.channel === null) {
         return;
     }
@@ -71,18 +78,18 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
     }
 
     // Create buttons row
-    const row = new MessageActionRow();
+    const row = new ActionRowBuilder<ButtonBuilder>();
     row.addComponents(
-        new MessageButton()
+        new ButtonBuilder()
             .setCustomId("prev")
             .setLabel("Previous")
-            .setStyle("PRIMARY")
+            .setStyle(ButtonStyle.Primary)
     );
     row.addComponents(
-        new MessageButton()
+        new ButtonBuilder()
             .setCustomId("next")
             .setLabel("Next")
-            .setStyle("PRIMARY")
+            .setStyle(ButtonStyle.Primary)
     );
 
     // Make embed message with buttons
@@ -92,20 +99,27 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
         embeds: [get_embed_message(skins, current_index)],
         components: [row],
     });
+
     const collector = embed_message.createMessageComponentCollector({
-        // filter: ({ user }) => user.id === message.author.id,
+        componentType: ComponentType.Button,
+        filter: (i: ButtonInteraction) => {
+            return true;
+            return i.user.id === interaction.user.id;
+        },
         time: 60000,
     });
-    collector.on("collect", async (interaction) => {
-        if (interaction.customId === "next") {
+
+    collector.on(Events.InteractionCreate, (i) => {
+        if (!i.isButton()) return;
+        if (i.customId === "next") {
             current_index += 1;
             current_index %= skins.length;
-        } else if (interaction.customId === "prev") {
+        } else if (i.customId === "prev") {
             current_index -= 1;
             current_index += skins.length;
             current_index %= skins.length;
         }
-        interaction.update({
+        i.update({
             embeds: [get_embed_message(skins, current_index)],
         });
     });

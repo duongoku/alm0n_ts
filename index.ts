@@ -6,7 +6,7 @@ import * as CGVFetcher from "./utils/CGVFetcher";
 import * as ValorantFetcher from "./utils/ValorantFetcher";
 import * as fs from "fs";
 import * as process from "process";
-import { Client, Intents, Collection } from "discord.js";
+import { Client, Partials, Collection } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v10";
 
@@ -16,8 +16,8 @@ export class NewClient extends Client {
     commands: Collection<string, any> = new Collection();
 }
 const client = new NewClient({
-    intents: [new Intents(32767)],
-    partials: ["CHANNEL"],
+    intents: [32767],
+    partials: [Partials.Channel],
 });
 
 // Check if prefix is defined in .env file and assign it

@@ -1,7 +1,7 @@
 import axios from "axios";
 import cheerio from "cheerio";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { NewClient } from "../index";
 
 async function get_definition_and_example(word: string) {
@@ -32,7 +32,7 @@ async function get_definition_and_example(word: string) {
         });
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     const term = interaction.options.getString("term")!;
     const result = await get_definition_and_example(term);
     if (result === "Error") {

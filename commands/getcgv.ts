@@ -1,12 +1,14 @@
 import * as fs from "fs";
 import axios from "axios";
-import process from "process";
+import process, { exit } from "process";
 import {
-    CommandInteraction,
-    MessageActionRow,
-    MessageButton,
-    MessageComponentInteraction,
-    MessageEmbed,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonInteraction,
+    ButtonStyle,
+    ChatInputCommandInteraction,
+    ComponentType,
+    EmbedBuilder,
 } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
@@ -37,7 +39,7 @@ async function save_image(url: string): Promise<string> {
     });
 }
 
-async function get_film_embed(film: Film, day: Day): Promise<MessageEmbed> {
+async function get_film_embed(film: Film, day: Day): Promise<EmbedBuilder> {
     let schedule = "";
     for (let i = 0; i < film.showtimes.length; i++) {
         if (i % 5 == 0 && i != 0) {
@@ -45,7 +47,7 @@ async function get_film_embed(film: Film, day: Day): Promise<MessageEmbed> {
         }
         schedule = `${schedule}\\| ${film.showtimes[i]} \\|`;
     }
-    return new MessageEmbed()
+    return new EmbedBuilder()
         .setTitle(film.name)
         .setDescription(film.type)
         .setImage(`attachment://${film.poster.split("/").pop()}`)
@@ -55,17 +57,17 @@ async function get_film_embed(film: Film, day: Day): Promise<MessageEmbed> {
 function get_city_selection_row(
     cities: City[],
     page_num: number
-): MessageActionRow {
+): ActionRowBuilder<ButtonBuilder> {
     // Create city selection buttons for the current page
-    let row = new MessageActionRow();
+    let row = new ActionRowBuilder<ButtonBuilder>();
     let begin = page_num * MAX_PAGE_ENTRIES;
     let end = Math.min(begin + MAX_PAGE_ENTRIES, cities.length);
     for (let i = begin; i < end; i++) {
         row.addComponents(
-            new MessageButton()
+            new ButtonBuilder()
                 .setCustomId(i.toString())
                 .setLabel(cities[i].name)
-                .setStyle("SUCCESS")
+                .setStyle(ButtonStyle.Success)
         );
     }
     return row;
@@ -74,16 +76,16 @@ function get_city_selection_row(
 function get_cinema_selection_row(
     city: City,
     page_num: number
-): MessageActionRow {
-    let row = new MessageActionRow();
+): ActionRowBuilder<ButtonBuilder> {
+    let row = new ActionRowBuilder<ButtonBuilder>();
     let begin = page_num * MAX_PAGE_ENTRIES;
     let end = Math.min(begin + MAX_PAGE_ENTRIES, city.cinemas.length);
     for (let i = begin; i < end; i++) {
         row.addComponents(
-            new MessageButton()
+            new ButtonBuilder()
                 .setCustomId(i.toString())
                 .setLabel(city.cinemas[i].name)
-                .setStyle("SUCCESS")
+                .setStyle(ButtonStyle.Success)
         );
     }
     return row;
@@ -92,45 +94,48 @@ function get_cinema_selection_row(
 function get_day_selection_row(
     days: Day[],
     page_num: number
-): MessageActionRow {
-    let row = new MessageActionRow();
+): ActionRowBuilder<ButtonBuilder> {
+    let row = new ActionRowBuilder<ButtonBuilder>();
     let begin = page_num * MAX_PAGE_ENTRIES;
     let end = Math.min(begin + MAX_PAGE_ENTRIES, days.length);
     for (let i = begin; i < end; i++) {
         row.addComponents(
-            new MessageButton()
+            new ButtonBuilder()
                 .setCustomId(i.toString())
                 .setLabel(days[i].date)
-                .setStyle("SUCCESS")
+                .setStyle(ButtonStyle.Success)
         );
     }
     return row;
 }
 
-function get_navigation_row(): MessageActionRow {
-    let row = new MessageActionRow();
+function get_navigation_row(): ActionRowBuilder<ButtonBuilder> {
+    let row = new ActionRowBuilder<ButtonBuilder>();
     row.addComponents(
-        new MessageButton()
+        new ButtonBuilder()
             .setCustomId("rset")
             .setLabel("Reset")
-            .setStyle("DANGER")
+            .setStyle(ButtonStyle.Danger)
     );
     row.addComponents(
-        new MessageButton()
+        new ButtonBuilder()
             .setCustomId("prev")
             .setLabel("Previous page")
-            .setStyle("PRIMARY")
+            .setStyle(ButtonStyle.Primary)
     );
     row.addComponents(
-        new MessageButton()
+        new ButtonBuilder()
             .setCustomId("next")
             .setLabel("Next page")
-            .setStyle("PRIMARY")
+            .setStyle(ButtonStyle.Primary)
     );
     return row;
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(
+    client: NewClient,
+    interaction: ChatInputCommandInteraction
+) {
     if (interaction.channel === null) {
         return;
     }
@@ -151,20 +156,21 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
     let films: Film[] = [];
     let selected_day: Day;
 
-    const embed_message = await interaction.channel!.send({
-        embeds: [new MessageEmbed().setTitle("Please select a city")],
+    const embed_message = await interaction.editReply({
+        embeds: [new EmbedBuilder().setTitle("Please select a city")],
         components: [selrow, navrow],
     });
 
     const collector = embed_message.createMessageComponentCollector({
-        filter: ({ user }) => {
-            return user.id === interaction.user.id;
+        componentType: ComponentType.Button,
+        filter: (i: ButtonInteraction) => {
+            return i.user.id === interaction.user.id;
         },
         time: 60000,
     });
 
-    async function buttonHandler(interaction: MessageComponentInteraction) {
-        switch (interaction.customId) {
+    async function buttonHandler(i: ButtonInteraction) {
+        switch (i.customId) {
             case "rset":
                 state = 0;
                 selected_city = cities[0];
@@ -184,10 +190,10 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
                 }
                 break;
             default:
-                let i = parseInt(interaction.customId);
+                let k = parseInt(i.customId);
                 switch (state) {
                     case 0:
-                        selected_city = cities[i];
+                        selected_city = cities[k];
                         page_count = Math.ceil(
                             selected_city.cinemas.length / MAX_PAGE_ENTRIES
                         );
@@ -195,7 +201,7 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
                         state = 1;
                         break;
                     case 1:
-                        days = selected_city.cinemas[i].days;
+                        days = selected_city.cinemas[k].days;
                         if (days.length > 0) {
                             page_count = Math.ceil(
                                 days.length / MAX_PAGE_ENTRIES
@@ -205,8 +211,8 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
                         }
                         break;
                     case 2:
-                        films = days[i].films;
-                        selected_day = days[i];
+                        films = days[k].films;
+                        selected_day = days[k];
                         page_count = films.length;
                         page_num = 0;
                         state = 3;
@@ -217,9 +223,9 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
 
         switch (state) {
             case 0:
-                interaction.update({
+                i.update({
                     embeds: [
-                        new MessageEmbed().setTitle("Please select a city"),
+                        new EmbedBuilder().setTitle("Please select a city"),
                     ],
                     components: [
                         get_city_selection_row(cities, page_num),
@@ -229,9 +235,9 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
                 });
                 break;
             case 1:
-                interaction.update({
+                i.update({
                     embeds: [
-                        new MessageEmbed().setTitle("Please select a cinema"),
+                        new EmbedBuilder().setTitle("Please select a cinema"),
                     ],
                     components: [
                         get_cinema_selection_row(selected_city, page_num),
@@ -241,9 +247,9 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
                 });
                 break;
             case 2:
-                interaction.update({
+                i.update({
                     embeds: [
-                        new MessageEmbed().setTitle("Please select a day"),
+                        new EmbedBuilder().setTitle("Please select a day"),
                     ],
                     components: [get_day_selection_row(days, page_num), navrow],
                     files: [],
@@ -254,7 +260,7 @@ export async function run(client: NewClient, interaction: CommandInteraction) {
                     films[page_num],
                     selected_day
                 );
-                interaction.update({
+                i.update({
                     embeds: [film_embed],
                     components: [navrow],
                     files: [films[page_num].poster],

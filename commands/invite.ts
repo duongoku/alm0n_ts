@@ -1,12 +1,11 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { NewClient } from "../index";
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     // Reply with invitation URl
     await interaction.editReply(
-        `https://discord.com/oauth2/authorize?client_id=${
-            client.user!.id
+        `https://discord.com/oauth2/authorize?client_id=${client.user!.id
         }&permissions=8&scope=bot`
     );
 }

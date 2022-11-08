@@ -1,6 +1,6 @@
 import axios from "axios";
 import process from "process";
-import { CommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction } from "discord.js";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { NewClient } from "../index";
 
@@ -71,7 +71,7 @@ async function get_converted_currency(
         });
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     try {
         // Check if currencies are valid
         const src_curr = interaction.options.getString("source_currency")!;

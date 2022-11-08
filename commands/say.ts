@@ -1,4 +1,4 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel } from "discord.js";
+import { ChatInputCommandInteraction, GuildMember, VoiceBasedChannel } from "discord.js";
 import { Readable } from "stream";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import {
@@ -52,7 +52,7 @@ async function get_tts_audio(text: string) {
 }
 
 async function playTTS(
-    interaction: CommandInteraction,
+    interaction: ChatInputCommandInteraction,
     text: string,
     player: AudioPlayer
 ) {
@@ -122,7 +122,7 @@ function preCheck(text: String) {
     return true;
 }
 
-export async function run(client: NewClient, interaction: CommandInteraction) {
+export async function run(client: NewClient, interaction: ChatInputCommandInteraction) {
     const member = interaction.member as GuildMember;
     const channel = member.voice.channel;
     const text = interaction.options.getString("text")!;
