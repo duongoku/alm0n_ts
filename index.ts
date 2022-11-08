@@ -79,7 +79,7 @@ client.on("ready", async () => {
     }
 
     // Start data fetchers
-    setInterval(CGVFetcher.fetch, 1000 * 60 * 60 * 2);
+    // setInterval(CGVFetcher.fetch, 1000 * 60 * 60 * 2);
     setInterval(ValorantFetcher.fetch, 1000 * 60 * 60 * 3);
 });
 
