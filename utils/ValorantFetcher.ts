@@ -63,8 +63,14 @@ async function cache_maps() {
 }
 
 async function cache_items() {
+    let vclient: typeof ValorantClient | ValorantClient = ValorantClient;
+    if (process.env.RIOT_USERNAME && process.env.RIOT_PASSWORD) {
+        vclient = new ValorantClient();
+        await vclient.init(process.env.RIOT_USERNAME, process.env.RIOT_PASSWORD);
+    }
+
     // Get skin prices
-    const raw_price = await ValorantClient.get_item_prices();
+    const raw_price = await vclient.get_item_prices();
     const price: Record<string, number> = {};
     for (let i = 0; i < raw_price.length; i++) {
         if (raw_price[i].Rewards[0].ItemTypeID === ITEMTYPEID.SKINS) {
@@ -74,7 +80,7 @@ async function cache_items() {
     }
 
     // Get skin prices of featured skins in case they are not yet in the price list
-    const raw_featured = await ValorantClient.get_featured_item_prices();
+    const raw_featured = await vclient.get_featured_item_prices();
     for (let i = 0; i < raw_featured.length; i++) {
         const x = raw_featured[i].Items;
         for (let j = 0; j < x.length; j++) {

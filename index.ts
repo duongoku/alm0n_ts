@@ -1,14 +1,30 @@
-// Load environment variables
-import * as dotenv from "dotenv";
-dotenv.config();
-
-import * as CGVFetcher from "./utils/CGVFetcher";
-import * as ValorantFetcher from "./utils/ValorantFetcher";
 import * as fs from "fs";
 import * as process from "process";
 import { Client, Partials, Collection } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v10";
+
+// Load environment variables
+import * as dotenv from "dotenv";
+dotenv.config();
+
+// Set up cli
+import { program } from "commander";
+program
+    .option("-u, --username <username>", "Your Riot username")
+    .option("-p, --password <password>", "Your Riot password")
+    .parse();
+const options = program.opts();
+if (options.username !== undefined && options.password !== undefined) {
+    process.env.RIOT_USERNAME = options.username;
+    process.env.RIOT_PASSWORD = options.password;
+} else if (!(options.username === undefined && options.password === undefined)) {
+    console.error("You must provide both username and password");
+    process.exit(1);
+}
+
+import * as ValorantFetcher from "./utils/ValorantFetcher";
+
 
 // Create new client
 export class NewClient extends Client {
