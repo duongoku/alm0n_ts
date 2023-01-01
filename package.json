@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "npx ts-node index.ts | tee log.txt"
+    "start": "npx ts-node index.ts 2>&1 | tee log.txt"
   },
   "author": "duongoku",
   "license": "GPL-3.0-or-later",
