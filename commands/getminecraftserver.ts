@@ -40,7 +40,7 @@ async function get_server_status(server_ip: string) {
                     try {
                         const data = response.data;
                         server.available = true;
-                        server.hostname = data.hostname;
+                        server.hostname = data.hostname ? data.hostname : data.ip;
                         server.max_players = data.players.max;
                         server.motd = data.motd.clean[0];
                         server.online = data.online;
