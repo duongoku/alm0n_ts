@@ -391,7 +391,7 @@ function reformat_match(match: any, username: string, tagline: string): Match {
     const result = match["teams"][team]["has_won"] ? "victory" : "defeat";
     const timestamp = DateTime.fromSeconds(match["metadata"]["game_start"])
         .setZone("Asia/Ho_Chi_Minh")
-        .toRFC2822();
+        .toRFC2822()!;
     const agent = player["assets"]["agent"]["small"].split("/")[4];
     const agentName = player["character"];
     const kills = player["stats"]["kills"];
