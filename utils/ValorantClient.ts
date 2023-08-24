@@ -35,20 +35,21 @@ export const CURRENCYID = {
     RP: `e59aa87c-4cbf-517a-5983-6e81511be9b7`, // Radianite Point
 };
 
-// This piece of code is from https://github.com/liamcottle/valorant.js/pull/22
+// This piece of code is inspired by
+// https://github.com/valapi/node-valapi/blob/main/packages/%40valapi/auth/src/client/AuthCore.ts
 const ciphers = [
-    "TLS_CHACHA20_POLY1305_SHA256",
     "TLS_AES_128_GCM_SHA256",
+    "TLS_CHACHA20_POLY1305_SHA256",
     "TLS_AES_256_GCM_SHA384",
-    "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256",
+    "TLS_AES_128_CCM_SHA256",
+    "TLS_AES_128_CCM_8_SHA256",
+    "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
 ];
 const agent = new Agent({
     ciphers: ciphers.join(":"),
     honorCipherOrder: true,
     minVersion: "TLSv1.2",
 });
-// This piece of code is from https://github.com/liamcottle/valorant.js/pull/22
-
 const riotClientUserAgent = process.env.RIOT_CLIENT_USER_AGENT!;
 const riotClientVersion = process.env.RIOT_CLIENT_VERSION!;
 const clientPlatform = Buffer.from(
@@ -59,6 +60,8 @@ const clientPlatform = Buffer.from(
         platformChipset: "Unknown",
     })
 ).toString("base64");
+// This piece of code is inspired by
+// https://github.com/valapi/node-valapi/blob/main/packages/%40valapi/auth/src/client/AuthCore.ts
 
 export interface Skin {
     name: string;
@@ -89,15 +92,15 @@ export class ValorantClient {
         "X-Riot-ClientVersion": string;
         "X-Riot-ClientPlatform": string;
     } = {
-        Authorization: "",
-        "X-Riot-Entitlements-JWT": "",
-        "X-Riot-ClientVersion": "",
-        "X-Riot-ClientPlatform": "",
-    };
+            Authorization: "",
+            "X-Riot-Entitlements-JWT": "",
+            "X-Riot-ClientVersion": "",
+            "X-Riot-ClientPlatform": "",
+        };
 
     static all_skins: { [x: string]: Skin } = {};
 
-    constructor() {}
+    constructor() { }
 
     public static NOT_REGISTERED_MSG =
         "You don't have a riot account saved in the database. Please register using /setriotusername and /setriotpassword.";
