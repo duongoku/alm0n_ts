@@ -130,6 +130,10 @@ async function cache_items() {
 }
 
 export async function fetch() {
+    if (!fs.existsSync(`${CACHEDIR}/images`)) {
+        fs.mkdirSync(`${CACHEDIR}/images`);
+    }
+
     // Fetch maps
     console.log("Fetching maps...");
     console.time("Cache maps");

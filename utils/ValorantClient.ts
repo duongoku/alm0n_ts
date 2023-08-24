@@ -304,6 +304,9 @@ export class ValorantClient {
     }
 
     static async get_all_skins() {
+        if (!fs.existsSync(`${process.env.CACHEDIR}/skins.json`)) {
+            fs.writeFileSync(`${process.env.CACHEDIR}/skins.json`, "{}");
+        }
         const result = fs.readFileSync(`${process.env.CACHEDIR}/skins.json`);
         return JSON.parse(result.toString());
     }
