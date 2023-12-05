@@ -17,7 +17,7 @@
     "@types/columnify": "^1.5.1",
     "@types/luxon": "^3.3.1",
     "@types/node": "^20.5.0",
-    "axios": "^1.4.0",
+    "axios": "^1.6.0",
     "canvas": "^2.11.2",
     "cheerio": "^1.0.0-rc.12",
     "commander": "^11.0.0",
